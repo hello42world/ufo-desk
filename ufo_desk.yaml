@@ -1,0 +1,176 @@
+esphome:
+  name: ufodesktest
+
+esp8266:
+  board: nodemcuv2
+
+# Enable logging
+logger:
+  hardware_uart: UART1
+
+#
+# Sireless stuff and Home Assistant API
+# Uncomment to enable.
+#
+
+#api:
+#  password: ""
+#
+#ota:
+#  password: ""
+#
+#wifi:
+#  ssid: ""
+#  password: ""
+#
+#  # Enable fallback hotspot (captive portal) in case wifi connection fails
+#  ap:
+#    ssid: "Ufodesktest Fallback Hotspot"
+#    password: "N4jvjHApeeqm"
+
+###########################
+
+external_components:
+  - source: ..
+    components: ufo_desk
+
+ufo_desk:
+  id: the_desk
+  on_desk_event:
+    - lambda: |-
+        const std::array all_switches = {
+          id(switch_up),
+          id(switch_down),
+        };
+        if (x.type == ufo_desk::UfoDeskEventType::curHeightChanged) {
+          id(sensor_desk_height).publish_state(x.desk.cur_height_mm());
+        } else if (x.type == ufo_desk::UfoDeskEventType::errorChanged) {
+          id(tsensor_error).publish_state(str_sprintf("E%02d", x.desk.error_code()));
+        } else if (x.type == ufo_desk::UfoDeskEventType::positionStatusChanged) {
+          id(tsensor_status).publish_state(x.desk.position_status_str());
+          if (x.desk.position_status() != ufo_desk::PositionStatus::movingSlow &&
+              x.desk.position_status() != ufo_desk::PositionStatus::movingFast) {
+            id(switch_up).turn_off();
+            id(switch_down).turn_off();
+          }
+        } else if (x.type == ufo_desk::UfoDeskEventType::btnStateChanged) {
+          auto b = x.desk.pushed_button();
+          if (b == ufo_desk::Button::up) {
+            ufo_desk::exclusive_turn_on(id(switch_up), all_switches);
+          } else if (b == ufo_desk::Button::down) {
+            ufo_desk::exclusive_turn_on(id(switch_down), all_switches);
+          } else if (b == ufo_desk::Button::none) {
+            ufo_desk::exclusive_turn_on((template_::TemplateSwitch*)nullptr, all_switches);
+          }
+        }
+        id(desk_display).update();
+
+sensor:
+  - platform: template
+    id: sensor_desk_height
+    name: Desk height
+    accuracy_decimals: 0
+    unit_of_measurement: mm
+    icon: mdi:ruler
+
+text_sensor:
+  - platform: template
+    id: tsensor_error
+    name: Error
+    icon: mdi:bug
+  - platform: template
+    id: tsensor_status
+    name: Status
+
+switch:
+  - platform: template
+    id: switch_up
+    name: "\u21A5 Up"
+    optimistic: true
+    turn_on_action:
+      lambda: |-
+        id(the_desk).desk().push_button(ufo_desk::Button::up);
+    turn_off_action:
+      lambda: |-
+        id(the_desk).desk().release_button();
+  - platform: template
+    id: switch_down
+    name: "\u21A7 Down"
+    optimistic: true
+    turn_on_action:
+      lambda: |-
+        id(the_desk).desk().push_button(ufo_desk::Button::down);
+    turn_off_action:
+      lambda: |-
+        id(the_desk).desk().release_button();
+
+button:
+  - platform: template
+    name: "Template Button"
+    on_press:
+      - logger.log: Button Pressed
+
+packages:
+  gpio_btn_mem: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn mem"
+      pin: "D1"
+      btn: "ufo_desk::Button::mem"
+  gpio_btn_up: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn up"
+      pin: "D2"
+      btn: "ufo_desk::Button::up"
+  gpio_btn_down: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn down"
+      pin: "D3"
+      btn: "ufo_desk::Button::down"
+  gpio_btn_preset1: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn preset1"
+      pin: "D4"
+      btn: "ufo_desk::Button::preset1"
+  gpio_btn_preset2: !include
+    file: gpio_btn.yaml
+    vars:
+      name: "GPIO btn preset2"
+      pin: "D7"
+      btn: "ufo_desk::Button::preset2"
+
+# D1 D2 D3 D4(led) D7
+
+uart:
+  tx_pin: GPIO1
+  rx_pin: GPIO3
+  baud_rate: 57600
+
+
+#
+# Display stuff
+#
+
+i2c:
+  sda: D5
+  scl: D6
+  frequency: 400kHz
+
+font:
+  - file: "gfonts://Roboto"
+    id: desk_font
+    size: 14
+
+display:
+  - platform: ssd1306_i2c
+    id: desk_display
+    model: "SSD1306 128x64"
+    lambda: |-
+      auto d = id(the_desk).desk();
+      it.printf(0, 0, id(desk_font), "H:%d", d.cur_height_mm());
+      it.printf(64, 0, id(desk_font), "MH:%d", d.stored_height_mm());
+      it.printf(0, 16, id(desk_font), "%s", d.position_status_str().c_str());
+      it.printf(0, 32, id(desk_font), "E:%02d", d.error_code());

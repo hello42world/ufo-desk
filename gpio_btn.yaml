@@ -1,0 +1,19 @@
+binary_sensor:
+  - platform: gpio
+    name: ${name}
+    internal: true
+    pin:
+      number: ${pin}
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - invert:
+      - delayed_on: 10ms
+      - delayed_off: 10ms
+    on_press:
+      lambda: |-
+        id(the_desk).desk().push_button(${btn});
+    on_release:
+      lambda: |-
+        id(the_desk).desk().release_button();
