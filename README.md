@@ -1,12 +1,12 @@
-This is an ESPHome component for contolling a lifting desk of an unknown model.
+This is an ESPHome component for controlling a lifting desk of an unknown model.
 ======
 
 Story
 ======
-Some time ago I picked up a used frame of a lifting desk with broken electronics. Quick recearch revealed that it didn't seem to be any of the known models that you can read about here for example https://community.home-assistant.io/t/desky-standing-desk-esphome-works-with-desky-uplift-jiecang-assmann-others/383790 
+Some time ago I picked up a used frame of a lifting desk with broken electronics. Quick research revealed that it didn't seem to be any of the known models that you can read about here for example https://community.home-assistant.io/t/desky-standing-desk-esphome-works-with-desky-uplift-jiecang-assmann-others/383790 
 
-The problem was the the contol panel didn't turn on every time. In fact, you had to plug and unplug it a hundreed times
-for it to finally come alive. Physically it seemed ok and I didn't have enough experise in electronics to invesigate
+The problem was the the control panel didn't turn on every time. In fact, you had to plug and unplug it a hundred times
+for it to finally come alive. Physically it seemed ok and I didn't have enough expertise in electronics to investigate
 it further, so I connected a logic analyzer, managed to turn it on and recorded some bytes that I later used to put
 this component together. I've also sketched a case that can be 3D printed.
 
