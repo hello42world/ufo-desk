@@ -9,7 +9,7 @@ logger:
   hardware_uart: UART1
 
 #
-# Sireless stuff and Home Assistant API
+# Wireless stuff and Home Assistant API
 # Uncomment to enable.
 #
 
