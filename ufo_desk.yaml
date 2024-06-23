@@ -13,20 +13,22 @@ logger:
 # Uncomment to enable.
 #
 
-#api:
-#  password: ""
-#
-#ota:
-#  password: ""
-#
-#wifi:
-#  ssid: ""
-#  password: ""
-#
-#  # Enable fallback hotspot (captive portal) in case wifi connection fails
-#  ap:
-#    ssid: "Ufodesktest Fallback Hotspot"
-#    password: "N4jvjHApeeqm"
+<<: !include creds.yaml
+
+api:
+ password: ""
+
+ota:
+ password: ""
+
+wifi:
+  ssid: ${wifi_name}
+  password: ${wifi_pwd}
+
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Ufodesktest Fallback Hotspot"
+    password: "N4jvjHApeeqm"
 
 ###########################
 
@@ -103,12 +105,6 @@ switch:
     turn_off_action:
       lambda: |-
         id(the_desk).desk().release_button();
-
-button:
-  - platform: template
-    name: "Template Button"
-    on_press:
-      - logger.log: Button Pressed
 
 packages:
   gpio_btn_mem: !include

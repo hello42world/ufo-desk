@@ -30,3 +30,10 @@ Case
 
 Model is here: 
 https://cad.onshape.com/documents/45d78cc525e092aee55fb095/w/e9f9bd97a05b0db866f06647/e/74652b7a18d69035dbb2d360
+
+Home Assistant
+======
+Since Home Assistant support is basically free in ESPHome I've exposed a couple of things just to 
+give it a try. There is more that can be done, but I don't actually use it, so maybe later.
+
+![HA](pic/ha.png)
